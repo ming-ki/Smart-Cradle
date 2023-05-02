@@ -4,7 +4,7 @@
 
 const char* ssid = "ubicomp"; // Wi-Fi SSID
 const char* password = "ubicomp407"; // Wi-Fi Password
-const char* server = "203.253.128.161"; // 모비우스 서버 IP 주소
+const char* server = "203.253.128.177"; // 모비우스 서버 IP 주소
 const int port = 7579; // 모비우스 서버 포트
 const String cnt = "Temperature";
 const String ae = "CapstonDesign"; // 모비우스에서 사용할 AE 이름
@@ -13,6 +13,9 @@ const String ae = "CapstonDesign"; // 모비우스에서 사용할 AE 이름
 #define DHTTYPE DHT11 // DHT11 사용
 
 DHT dht(DHTPIN, DHTTYPE); // DHT11 객체 생성
+
+int hum_pin = 0; // 가습기 핀 D8
+float t, h;
 
 void setup() {
   Serial.begin(115200);
@@ -29,19 +32,23 @@ void setup() {
   Serial.println("Connected to Wi-Fi");
 
   dht.begin(); // DHT11 초기화
+  pinMode(hum_pin, OUTPUT); // 가습기 핀을 출력 모드로 설정
 }
 
 void loop() {
   if (WiFi.status() == WL_CONNECTED) {
+    int waterSensorVal = analogRead(A0);
     float temp = dht.readTemperature(); // 온도 측정
     float hum = dht.readHumidity();
+    Serial.println(temp);
+    Serial.println(hum);
     if (isnan(temp)) {
       Serial.println("Failed to read temperature from DHT sensor");
       delay(1000);
       return;
     }
 
-    String payload = "{\"m2m:cin\": {\"con\": \"" + String(temp) + "," + String(hum) + "\"}}"; // 전송할 데이터
+    String payload = "{\"m2m:cin\": {\"con\": \"" + String(temp) + "," + String(hum) + "," + String(waterSensorVal)+"\"}}"; // 전송할 데이터
 
     HTTPClient http;
 
@@ -63,9 +70,16 @@ void loop() {
       Serial.println(httpCode);
       Serial.println(response);
     }
+
+    // 습도가 36% 미만이면 가습기를 작동시킴
+    if (hum <= 27) {
+      digitalWrite(hum_pin, HIGH); // 가습기 켬
+    } else {
+      digitalWrite(hum_pin, LOW); // 가습기 끔
+    }
   } else {
     Serial.println("Wi-Fi disconnected");
   }
 
-  delay(5000); // 5초마다 데이터 전송
+  delay(5000); // 5초마다 데이터 전송 및 가습기 제어
 }
