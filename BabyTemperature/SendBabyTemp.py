@@ -2,12 +2,12 @@ import cv2
 import requests
 
 # mobius server url, header
-url = 'http://203.253.128.161:7579/Mobius/CapstonDesign/BabyTemp'
+url = 'http://203.253.128.177:7579/Mobius/CapstonDesign/BabyTemp'
 
 headers = {
     'Accept': 'application/json',
     'X-M2M-RI': '12345',
-    'X-M2M-Origin': 'S3_V9fUjSiAI',
+    'X-M2M-Origin': 'cap',
     'Content-Type': 'application/vnd.onem2m-res+json; ty=3'
 }
 
