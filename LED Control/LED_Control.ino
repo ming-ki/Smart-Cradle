@@ -7,8 +7,8 @@ const char* ssid = "ubicomp";
 const char* password = "ubicomp407";
 const char* server = "203.253.128.177";
 const int port = 7579;
-const String cnt = "BabyTemp";
 const String ae = "CapstonDesign";
+const String cnt = "LED";
 
 const int LED_PIN = D7;
 const int LED_COUNT = 36;
@@ -36,7 +36,9 @@ void loop() {
   if (WiFi.status() == WL_CONNECTED) {
     WiFiClient client;
     HTTPClient http;
+    HTTPClient http2;
 
+    // BabyTemp 데이터를 받아옴
     http.begin("http://" + String(server) + ":" + String(port) + "/Mobius/" + ae + "/" + cnt + "/latest");
     http.addHeader("Accept", "application/json");
     http.addHeader("X-M2M-RI", "12345");
@@ -52,18 +54,32 @@ void loop() {
       deserializeJson(doc, response);
 
       String con = doc["m2m:cin"]["con"].as<String>();
-      Serial.println(con);
+      Serial.println("BabyTemp: " + con);
 
-      // con 값이 36.5 이상인 경우 모든 LED를 켬
-      if (con.toFloat() > 36.5) {
+      // LED 제어
+      if (con == "1") {
         for (int i = 0; i < LED_COUNT; i++) {
-          strip.setPixelColor(i, strip.Color(255, 0, 0)); // LED를 빨간색으로 설정
+          strip.setPixelColor(i, strip.Color(255, 255, 255)); // 흰색으로 설정
         }
         strip.show();
-      }
-      else {
+      } else if (con == "0") {
         for (int i = 0; i < LED_COUNT; i++) {
           strip.setPixelColor(i, strip.Color(0, 0, 0)); // LED를 끔
+        }
+        strip.show();
+      } else if (con == "2") {
+        for (int i = 0; i < LED_COUNT; i++) {
+          strip.setPixelColor(i, strip.Color(255, 0, 0)); // 빨강색으로 설정
+        }
+        strip.show();
+      } else if (con == "3") {
+        for (int i = 0; i < LED_COUNT; i++) {
+          strip.setPixelColor(i, strip.Color(255, 255, 0)); // 노랑색으로 설정
+        }
+        strip.show();
+      } else if (con == "4") {
+        for (int i = 0; i < LED_COUNT; i++) {
+          strip.setPixelColor(i, strip.Color(0, 0, 255)); // 파랑색으로 설정
         }
         strip.show();
       }
